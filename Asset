@@ -1,0 +1,20 @@
+local Title = ""
+local Text = ""
+local ButtonText = "Text Here"
+local Button2Text = "Text Here"
+local IconId = "127115407118009"
+-- [ [ Toggle/Enable  ] ]
+local HaveIcon = true
+local HaveButton1 = false
+local HaveButton2 = false
+local Duration = 0.7
+--[ [ Functions ] ]
+local function Button1Code()
+-- code here
+end
+
+local function Button2Code()
+-- code here
+end
+
+loadstring(game:HttpGet("https://pastebin.com/raw/FUPBRUuY"))()(Title, Text, ButtonText, Button2Text, IconId, HaveIcon, HaveButton1, HaveButton2, Duration, Button1Code, Button2Code)

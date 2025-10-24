@@ -1,0 +1,72 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local function createStaff()
+    local rightHand = character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")
+    if not rightHand then
+        warn("[DEBUG] RightHand/Right Arm not found!")
+        return
+    end
+
+
+    local staffParts = {}
+    local segmentCount = 17
+    local segmentWidth = 0.35 -- Keeping original scale
+    local segmentHeight = 0.4
+
+    for i = 1, segmentCount do
+        local segment = Instance.new("Part")
+        segment.Size = Vector3.new(segmentWidth, segmentHeight, segmentHeight) 
+        segment.Material = Enum.Material.Metal
+        segment.Color = Color3.fromRGB(255, 255, 255) 
+        segment.CanCollide = false
+        segment.CanTouch = false
+        segment.CanQuery = false
+        segment.Anchored = false
+        segment.Massless = true
+        segment.Parent = character
+
+        local particle = Instance.new("ParticleEmitter")
+        particle.Texture = "rbxassetid://35253286"
+        particle.Color = ColorSequence.new(Color3.fromRGB(170, 0, 255))
+        particle.LightEmission = 1
+        particle.Lifetime = NumberRange.new(0.2, 0.5)
+        particle.Rate = 31
+        particle.Speed = NumberRange.new(2, 5)
+        particle.Rotation = NumberRange.new(0, 360)
+        particle.Size = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.15),
+            NumberSequenceKeypoint.new(0.3, 0.3),
+            NumberSequenceKeypoint.new(1, 0.15)
+        })
+        particle.Parent = segment
+
+        table.insert(staffParts, segment)
+    end
+
+    local middleIndex = math.ceil(segmentCount / 2)
+    local middleSegment = staffParts[middleIndex]
+
+    local motor = Instance.new("Motor6D")
+    motor.Part0 = rightHand
+    motor.Part1 = middleSegment
+    motor.C0 = CFrame.new(0, 0, -0.2) * CFrame.Angles(0, 0, math.rad(90))
+    motor.Parent = rightHand
+
+    for i = 2, #staffParts do
+        local weld = Instance.new("Motor6D")
+        weld.Part0 = staffParts[i - 1]
+        weld.Part1 = staffParts[i]
+        weld.C0 = CFrame.new(segmentWidth, 0, 0) 
+        weld.Parent = staffParts[i - 1]
+
+        staffParts[i].CFrame = staffParts[i - 1].CFrame * CFrame.new(segmentWidth, 0, 0)
+    end
+
+    print("Hi!")
+end
+
+task.wait(1) 
+createStaff()
+local lplr = game.Players.LocalPlayer
+local char = lplr.Character or lplr.CharacterAdded:Wait()

@@ -1,72 +1,61 @@
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
+_G.Staff = _G.Staff or {}
+getgenv().Staff = getgenv().Staff or {}
 
-local function createStaff()
-    local rightHand = character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")
-    if not rightHand then
-        warn("[DEBUG] RightHand/Right Arm not found!")
-        return
-    end
+local plr = game.Players.LocalPlayer
+local char = plr.Character or plr.CharacterAdded:Wait()
+local hand = char:FindFirstChild("RightHand") or char:FindFirstChild("Right Arm")
 
+if not hand then return end
 
-    local staffParts = {}
-    local segmentCount = 17
-    local segmentWidth = 0.35 -- Keeping original scale
-    local segmentHeight = 0.4
+local parts = {}
+local cfg = {count = 17, width = 0.35, height = 0.4}
 
-    for i = 1, segmentCount do
-        local segment = Instance.new("Part")
-        segment.Size = Vector3.new(segmentWidth, segmentHeight, segmentHeight) 
-        segment.Material = Enum.Material.Metal
-        segment.Color = Color3.fromRGB(255, 255, 255) 
-        segment.CanCollide = false
-        segment.CanTouch = false
-        segment.CanQuery = false
-        segment.Anchored = false
-        segment.Massless = true
-        segment.Parent = character
-
-        local particle = Instance.new("ParticleEmitter")
-        particle.Texture = "rbxassetid://35253286"
-        particle.Color = ColorSequence.new(Color3.fromRGB(170, 0, 255))
-        particle.LightEmission = 1
-        particle.Lifetime = NumberRange.new(0.2, 0.5)
-        particle.Rate = 31
-        particle.Speed = NumberRange.new(2, 5)
-        particle.Rotation = NumberRange.new(0, 360)
-        particle.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.15),
-            NumberSequenceKeypoint.new(0.3, 0.3),
-            NumberSequenceKeypoint.new(1, 0.15)
-        })
-        particle.Parent = segment
-
-        table.insert(staffParts, segment)
-    end
-
-    local middleIndex = math.ceil(segmentCount / 2)
-    local middleSegment = staffParts[middleIndex]
-
-    local motor = Instance.new("Motor6D")
-    motor.Part0 = rightHand
-    motor.Part1 = middleSegment
-    motor.C0 = CFrame.new(0, 0, -0.2) * CFrame.Angles(0, 0, math.rad(90))
-    motor.Parent = rightHand
-
-    for i = 2, #staffParts do
-        local weld = Instance.new("Motor6D")
-        weld.Part0 = staffParts[i - 1]
-        weld.Part1 = staffParts[i]
-        weld.C0 = CFrame.new(segmentWidth, 0, 0) 
-        weld.Parent = staffParts[i - 1]
-
-        staffParts[i].CFrame = staffParts[i - 1].CFrame * CFrame.new(segmentWidth, 0, 0)
-    end
-
-    print("Hi!")
+for i = 1, cfg.count do
+    local seg = Instance.new("Part")
+    seg.Size = Vector3.new(cfg.width, cfg.height, cfg.height)
+    seg.Material = Enum.Material.Metal
+    seg.Color = Color3.fromRGB(255, 215, 0)
+    seg.CanCollide, seg.CanTouch, seg.CanQuery = false, false, false
+    seg.Anchored, seg.Massless = false, true
+    seg.Parent = char
+    
+    local emit = Instance.new("ParticleEmitter")
+    emit.Texture = "rbxassetid://35253286"
+    emit.Color = ColorSequence.new(Color3.fromRGB(170, 0, 255))
+    emit.LightEmission, emit.Rate = 1, 50
+    emit.Lifetime = NumberRange.new(0.3, 0.7)
+    emit.Speed = NumberRange.new(3, 7)
+    emit.Rotation = NumberRange.new(0, 360)
+    emit.RotSpeed = NumberRange.new(-100, 100)
+    emit.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.2),
+        NumberSequenceKeypoint.new(0.5, 0.4),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    emit.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.1),
+        NumberSequenceKeypoint.new(0.3, 0.4),
+        NumberSequenceKeypoint.new(0.7, 0.3),
+        NumberSequenceKeypoint.new(1, 0.1)
+    })
+    emit.Parent = seg
+    
+    parts[i] = seg
 end
 
-task.wait(1) 
-createStaff()
-local lplr = game.Players.LocalPlayer
-local char = lplr.Character or lplr.CharacterAdded:Wait()
+local mid = parts[math.ceil(cfg.count / 2)]
+local motor = Instance.new("Motor6D")
+motor.Name, motor.Part0, motor.Part1 = "StaffMotor", hand, mid
+motor.C0 = CFrame.new(0, 0, -0.2) * CFrame.Angles(0, 0, math.rad(90))
+motor.Parent = hand
+
+for i = 2, #parts do
+    local weld = Instance.new("Motor6D")
+    weld.Part0, weld.Part1 = parts[i - 1], parts[i]
+    weld.C0 = CFrame.new(cfg.width, 0, 0)
+    weld.Parent = parts[i - 1]
+    parts[i].CFrame = parts[i - 1].CFrame * weld.C0
+end
+
+_G.Staff = {Motor = motor, Parts = parts}
+getgenv().Staff = _G.Staff
